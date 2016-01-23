@@ -52,7 +52,7 @@
  * the size of the written data.  This is what the trunc_*() macros are for.
  *
  * The size sometimes does and sometimes doesn't include the trailing '\0'
- * [or L'\0'], so we always add or subtract 1 in the appropriate places so
+ * [or L'\0'], so we always add or substract 1 in the appropriate places so
  * we don't care about this detail.
  *
  * A call may  1) request a pointer to the buffer size which means that
@@ -70,7 +70,7 @@
  *
  * The user can pass in C<[]> or C<0> to indicate that they don't care about
  * the buffer size [we aren't programming in C here, after all] and just try
- * to get the data.  This will work if either the buffer already allocated for
+ * to get the data.  This will work if either the buffer already alloated for
  * the SV [scalar value] is large enough to hold the data or the API provides
  * an easy way to determine the required size [and the XS code uses it].
  *
@@ -96,7 +96,7 @@
  * section [grow_*()], the INIT: section [init_*()], or the OUTPUT: section
  * [trunc_*()].
  *
- * Buffer arguments should be initialised with C<= NO_INIT> [or C<= NULL;>].
+ * Buffer arguments should be initialied with C<= NO_INIT> [or C<= NULL;>].
  *
  * See also the F<typemap> file.  C<oDWORD>, for example, is for an output-
  * only parameter of type C<DWORD> and you should simply C<#define> it to be
@@ -119,9 +119,9 @@
  * determine the size of data written based on the size of the scalar we
  * output anyway.
  *
- * This second difference doesn't apply unless the parameter is listed in
+ * This second difference doesn't apply unless the paremter is listed in
  * the OUTPUT: section without specific output instructions.  We define
- * no macros for outputting buffer length parameters so be careful to use
+ * no macros for outputing buffer length parameters so be careful to use
  * C<oDWORD> [for example] for them if and only if they are output-only.
  *
  * Note that C<oDWORD> is the same as C<DWORD> in that, if a defined value
@@ -214,7 +214,7 @@
 #define null_arg(sv)	(  SvROK(sv)  &&  SVt_PVAV == SvTYPE(SvRV(sv))	\
 			   &&  -1 == av_len((AV*)SvRV(sv))  )
 
-#define PV_or_null(sv)	( null_arg(sv) ? NULL : SvPV_nolen(sv) )
+#define PV_or_null(sv)	( null_arg(sv) ? NULL : SvPV(sv,PL_na) )
 
 /* Minimum buffer size to use when no buffer existed: */
 #define MIN_GROW_SIZE	128
@@ -233,7 +233,7 @@
 
 /* Whether the buffer size we got lets us change what buffer size we use: */
 #define autosize(sv)	(!(  SvOK(sv)  &&  ! SvROK(sv)		\
-			 &&  SvPV_nolen(sv)  &&  '=' == *SvPV_nolen(sv)  ))
+			 &&  SvPV(sv,PL_na)  &&  '=' == *SvPV(sv,PL_na)  ))
 
 /* Get the IV/UV for a parameter that might be C<[]> or C<undef>: */
 #define optIV(sv)	( null_arg(sv) ? 0 : !SvOK(sv) ? 0 : SvIV(sv) )
@@ -259,7 +259,7 @@
 /* Initialize a buffer size argument of type DWORD: */
 #define init_buf_l( svSize )						\
 	(  null_arg(svSize) ? 0 : autosize(svSize) ? optUV(svSize)	\
-	   : strtoul( 1+SvPV_nolen(svSize), NULL, 10 )  )
+	   : strtoul( 1+SvPV(svSize,PL_na), NULL, 10 )  )
 /* In INPUT section put "= init_buf_l($arg);" after variable name. */
 
 /* Lengths in WCHARs are initialized the same as lengths in bytes: */
@@ -372,7 +372,7 @@
 	    SvCUR_set( svBuf, lSize );					\
 	} } STMT_END
 
-/* Same as above except we have a pointer to the returned length: */
+/* Same as above except we have a poitner to the returned length: */
 #define	trunc_buf_pl( bOkay, sBuf,svBuf, plSize )			\
 	trunc_buf_l( bOkay, sBuf,svBuf, *plSize )
 
@@ -383,7 +383,7 @@
 	    SvCUR_set( svBuf, (lwSize)*sizeof(WCHAR) );			\
 	} } STMT_END
 
-/* Same as above except we have a pointer to the returned length: */
+/* Same as above except we have a poitner to the returned length: */
 #define	trunc_buf_plw( bOkay, swBuf,svBuf, plwSize )			\
 	trunc_buf_lw( bOkay, swBuf,svBuf, *plwSize )
 

@@ -1,55 +1,55 @@
 #!/usr/bin/perl -w
-use 5.001; #not tested
+
+use 5.005;
 use ExtUtils::MakeMaker;
 use Config;
 use strict;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+
 unless ($^O eq "MSWin32" || $^O eq "cygwin" || $^O eq "interix") { #not tested on Interix
     die "OS unsupported\n";
 }
 
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
 WriteMakefile1(
-    'NAME'	=> 'Win32API::File',
-    'VERSION_FROM' => 'File.pm', # finds $VERSION
+    'NAME'		=> 'Win32API::Registry',
+    'VERSION_FROM'	=> 'Registry.pm',	# finds $VERSION
+    'LICENSE'           => 'perl',
     (  $Config{archname} =~ /-object\b/i  ?  ( 'CAPI' => 'TRUE' )  :  ()  ),
-    'AUTHOR'		=> 'Tye McQueen <tye@metronet.com>',
-    'ABSTRACT_FROM'	=> 'File.pm',
-    'postamble' => { IMPORT_LIST => [qw(/._/ !/[a-z]/ :MEDIA_TYPE)],
-		     IFDEF => "!/[a-z\\d]/",
-		     CPLUSPLUS => 1,
-		     WRITE_PERL => 1,
-		     #PERL_FILE_LIST => ['File.pm'], #added by Chorny
-		     #C_FILE_LIST => ['File.xs'], #added by Chorny
-		     # Comment out next line to rebuild constants defs:
-		     NO_REBUILD => 1,
-		   },
-    (  ! $Config{libperl}  ?  ()  :  ( LIBPERL_A => $Config{libperl} )  ),
-    'INSTALLDIRS' => (($] >= 5.008009 and $] < 5.012) ? 'perl' : 'site'),
-    'LICENSE'	=> 'perl',
-    'MIN_PERL_VERSION' => 5.001,
-    'PREREQ_PM'	=> {
-        'Math::BigInt' => 0,
-        'Win32' => 0,
-        'Carp' => 0,
-        'IO::File' => 0,
-    },
-    TEST_REQUIRES => {
-        'File::Spec' => 0,
-        'Test::More' => 0,
-    },
-
-    META_MERGE => {
-        resources => {
-            repository => 'http://github.com/chorny/Win32API-File',
-        },
-    },
+	'AUTHOR'		=> 'Tye McQueen <tye@metronet.com>',
+	'ABSTRACT_FROM'	=> 'Registry.pm',
+	'MIN_PERL_VERSION' => '5.005',
+	'META_MERGE' => {
+		resources => {
+			repository => 'git://github.com/chorny/Win32API-Registry.git',
+		},
+	},
+	#TEST_REQUIRES => {
+	#},
     $^O =~/win/i ? (
         dist => {
             TAR      => 'ptar',
             TARFLAGS => '-c -C -f',
         },
     ) : (),
+
+    (	# 5.008 <= $]  ?  'CONST2PERL'  :	# Will this ever work? /:
+        'postamble'
+    )		=> { IMPORT_LIST => [qw(/._/ !/[a-z]/)],
+		     IFDEF => q{ /^SE_/ ? '__cplusplus' : /REG_/ },
+		     CPLUSPLUS => 1,
+		     WRITE_PERL => 1,
+		     VALUES => {
+			KEY_DELETE => 'DELETE',
+			KEY_READ_CONTROL => 'READ_CONTROL',
+			KEY_WRITE_DAC => 'WRITE_DAC',
+			KEY_WRITE_OWNER => 'WRITE_OWNER',
+			KEY_SYNCHRONIZE => 'SYNCHRONIZE', # (not used)
+		     },
+		     # Comment out next line to rebuild constants defs:
+		     NO_REBUILD => 1,
+		   },
+    (  ! $Config{libperl}  ?  ()  :  ( LIBPERL_A => $Config{libperl} )  ),
 );
 
 # Replacement for MakeMaker's "const2perl section" for versions
@@ -89,13 +89,13 @@ sub MY::postamble
 	# How to create F<$outfile> via ExtUtils::Myconst2perl::Myconst2perl:
 	push @m, "
 $outfile:	@perlfiles  @cfiles  Makefile" . '
-	$(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" -MExtUtils::Myconst2perl \\
+	$(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" -Iinc -MExtUtils::Myconst2perl \\
 	  -e "my %attribs;" \\
 	  ';
 	$m[-1] =~ s/^/##/gm   if  $noreb;
 	my( $key, $value );
 	while(  ( $key, $value )= each %{$hvAttr->{$module}}  ) {
-	    push @m, '-e "$$attribs{' . $key . '}= ' # try {{ }} for dmake
+	    push @m, '-e "$$attribs{' . $key . '}= '
 	      . neatvalue($value) . qq[;" \\\n\t  ];
 	    $m[-1] =~ s/^/##/gm   if  $noreb;
 	}
@@ -134,10 +134,7 @@ ${_final}_to_blib: $final
         -e "pm_to_blib({ ',neatvalue($final),',',
 	neatvalue($self->catfile('$(INST_ARCHLIB)',@path,$final)), ' },',
 	neatvalue($self->catfile(qw[$(INST_LIB) auto])), ')"
-	@$(TOUCH) ', $_final, "_to_blib
-
-realclean ::
-	$self->{RM_RF} ", $self->catfile('$(INST_ARCHLIB)', $path[0]), "\n";
+	@$(TOUCH) ', $_final, "_to_blib\n";
 
 	    push( @clean, $outfile, $bin, $obj, $_final . "_to_blib" );
 	    push( @realclean, $final )   unless  $noreb;
@@ -153,12 +150,11 @@ realclean ::
     push @m, "
 clean ::
 	$self->{RM_F} @clean\n"   if  @clean;
-    push @m, "
+	push @m, "
 realclean ::
 	$self->{RM_F} @realclean\n"   if  @realclean;
-    return join('',@m);
+	return join('',@m);
 }
-
 
 sub WriteMakefile1 {  #Compatibility code for old versions of EU::MM. Written by Alexandr Ciornii, version 0.23. Added by eumm-upgrade.
 	my %params=@_;
@@ -184,9 +180,6 @@ sub WriteMakefile1 {  #Compatibility code for old versions of EU::MM. Written by
 	delete $params{META_MERGE} if $eumm_version < 6.46;
 	delete $params{META_ADD} if $eumm_version < 6.46;
 	delete $params{LICENSE} if $eumm_version < 6.31;
-	delete $params{AUTHOR} if $] < 5.005;
-	delete $params{ABSTRACT_FROM} if $] < 5.005;
-	delete $params{BINARY_LOCATION} if $] < 5.005;
 
 	WriteMakefile(%params);
 }
