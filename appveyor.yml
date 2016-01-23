@@ -14,7 +14,6 @@ install:
   - dir
   - PATH
   - gcc --version
-  - make --help
   - dmake --help
   - cpan App::cpanminus
   - cpanm -q --with-develop --with-suggests --installdeps .
