@@ -9,6 +9,7 @@ os:
 install:
   # running under CI
   - set CI_TESTING=1
+  - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
   - perl -V
   - dir
   - PATH
