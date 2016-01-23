@@ -4,7 +4,7 @@ install:
   # running under CI
   - set CI_TESTING=1
   - perl -V
-  - cpan App::cpanminus
+  - ppm install App::cpanminus
   - cpanm -q --with-develop --with-suggests .
   - 'echo End install at: & time /t'
 
