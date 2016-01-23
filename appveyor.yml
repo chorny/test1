@@ -8,7 +8,7 @@ install:
   - perl -V
   - PATH
   - ppm install dmake
-  - cpanm -q --with-develop --with-suggests --installdeps .
+  - cpan .
   - 'echo End install at: & time /t'
 
 build_script:
