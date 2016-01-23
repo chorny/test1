@@ -4,9 +4,8 @@ install:
   # running under CI
   - set CI_TESTING=1
   - perl -V
-  - cpan App::cpanminus
-  - cpanm -q --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -n
-  - 'echo End intall at: & time /t'
+  - cpan .
+  - 'echo End indtall at: & time /t'
 
 build_script:
   - perl Makefile.PL
