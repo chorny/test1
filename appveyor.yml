@@ -15,7 +15,6 @@ install:
   - PATH
   - ppm install dmake
   - gcc --version
-  - dmake --help
   - cpan App::cpanminus
   - cpanm -q --with-develop --with-suggests --installdeps .
   - 'echo End install at: & time /t'
