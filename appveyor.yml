@@ -9,7 +9,8 @@ install:
   - PATH
   - ppm install dmake
   - mkdir C:\Perl\cpan\build
-  - cpan .
+  - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm cpanm
+  - cpanm .
   - 'echo End install at: & time /t'
 
 build_script:
