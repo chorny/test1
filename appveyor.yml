@@ -15,3 +15,4 @@ build_script:
 
 test_script:
   - dmake test
+  - prove -bv xt/*.t
