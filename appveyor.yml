@@ -4,8 +4,13 @@ install:
   # running under CI
   - set CI_TESTING=1
   - perl -V
-  - ppm install App::cpanminus
-  - cpanm -q --with-develop --with-suggests .
+  - dir
+  - PATH
+  - gcc --version
+  - make --help
+  - dmake --help
+  - cpan App::cpanminus
+  - cpanm -q --with-develop --with-suggests --installdeps .
   - 'echo End install at: & time /t'
 
 build_script:
