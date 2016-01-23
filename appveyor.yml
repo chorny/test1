@@ -13,6 +13,7 @@ install:
   - perl -V
   - dir
   - PATH
+  - ppm install dmake
   - gcc --version
   - gmake --help
   - cpan App::cpanminus
