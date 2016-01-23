@@ -2,20 +2,12 @@ version: 1.0.{build}
 
 clone_depth: 1
 
-os:
-  - MinGW
-
-
 install:
   # running under CI
   - set CI_TESTING=1
-  - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
   - perl -V
-  - dir
   - PATH
   - ppm install dmake
-  - gcc --version
-  - cpan App::cpanminus
   - cpanm -q --with-develop --with-suggests --installdeps .
   - 'echo End install at: & time /t'
 
