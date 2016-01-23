@@ -3,7 +3,7 @@ version: 1.0.{build}
 clone_depth: 1
 
 install:
-  # running under CI
+  - mingw32-make.exe --version
   - reg add HKEY_CURRENT_USER\Software\Perl\test\
   - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
   - ppm install dmake Test::Pod
