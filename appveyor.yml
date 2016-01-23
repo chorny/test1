@@ -1,5 +1,11 @@
 version: 1.0.{build}
 
+clone_depth: 1
+
+os:
+  - MinGW
+
+
 install:
   # running under CI
   - set CI_TESTING=1
