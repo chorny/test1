@@ -1,150 +1,95 @@
-Revision history for Perl extension Win32API::Registry.
+Revision history for Perl extension Win32::TieRegistry.
 
-0.33:  2015-04-04
-       - Fixed RT#37750 - RegQueryValueEx can cause perl to crash (DDICK@cpan.org)
-       - Fixed test 21 for Windows with locale other than English or Russian
+0.29_02 2015-04-27
+    - Even better diagnostics in case of failure in 02_main.t
 
-0.32_01: 2015-02-16
-       - Fix RT#77440
-       - Fixed test 21 for Russian Windows
-       - tests moved to t/
+0.29_01 2015-04-12
+    - Better diagnostics in case of failure in 02_main.t
 
-0.32:  2010-04-29
-       - Undo changes to move to Module::Build until I have more time to 
-         work out how I broke things.
+0.29  2015-04-05
+    - Fixed error that appeared in 02_main.t when running as regular user
 
-0.31:  2009-09-15
-       - Fix pod error.
+0.28  2015-02-26
+    - Fixed error in sub _enumValues
 
-0.30_01:  2009-09-15
-       - Include LICENSE file.  License for Win32API::Registry is same as what 
-         it is for Perl: Dual GPL v1 or higher and Artistic License. 
-       - Move to using Module::Build so that META.yml is generated correctly.
-       - Reorganised files in archive to be a more modern layout mostly to make 
-         moving to Module::Build easier.
+0.27  2015-02-15
+    - Fixed error that appeared on Strawberry perl 5.20
+    - General distribution maintenance
 
-0.30:  2008-05-22
-       - Patch applied RT#35390: Win64 compatibility from 
-         JDB <JDB [...] cpan.org>
-       - Patch reinstates the ok output for commented test until I refresh 
-         the tests to use Test::More.
-       - Patch fixes issues with win64 alignment changes.
-       - Patch adds appropriate casts to eliminate compiler warnings.
+0.26 Sun 19 Apr 2009
+	- Removing legacy Install.bat
+	- Moving existing test script to t directory
+	- Moving pm files into lib
+	- Cleaned up the legacy Tie::Registry so it has POD
+	  (that mostly just says it is deprecated)
+	- Migrated test to Test::More
 
-0.29:  2008-04-11
-       - Fix missing seperator in Makefile error when using GNU Make by 
-         applying the patch from Reini Urban <RURBAN@cpan.org> RT#31849.
-       - Remove parameter from Makefile.PL that Makemaker no longer 
-         understands (EXTRA_META).
+0.25  missing
 
-0.28:  2007-01-27
-       - Fix no_index: according to discussion on modules@perl.org 6-Jul-06 
-         the correct no_index modifier is directory not dir.
-       - Comment out the test that shuts down the computer. 
-         (InitiateSystemShutdown) 
+0.24  2001-02-06 19:00
+	- Silenced error that could appear "at random" during "cleanup":
+		(Can't call method "FETCH" on an undefined value)
+	- Added a nearly trivial test suite.
 
-0.27:  2006-04-04
-       - Fix no_index: on the Extutils directory now using the 6.30_01 
-         version of ExtUtils::MakeMaker.
+0.23  1999-07-03 00:06
+	- Fixed two embarrassing typographical errors.
+	- Using invalid REG_* or KEY_* constant as string now detected.
+	- With ArrayValues(1), $key->{NonExistantValueName} used to return
+	  C<[]> but now returns C<undef> [or C<()>].  Old code like
+	  C<if( $reg->{value}->[0] )> should still work but now can be
+	  improved to C<if( $reg->{value} )> [which used to always be true
+	  when the ArrayValues option was enabled].
+	- All implicit C<return>s made explicit [C<$val;> to C<return $val;>].
+	- Simplified C<return wantarray ? () : undef> to C<return ()>.
 
-0.26:  2006-04-03
-       - Fix no_index: on the Extutils directory.
+0.22  1999-04-09 22:13
+	- C<new Win32::TieRegistry> and "Win32::TieRegistry->new" now work.
+	- CreateKey()'s "disposition" argument now can get its string value
+	  set to "REG_CREATED_NEW_KEY" or "REG_OPENED_EXISTING_KEY".
+	- GetOptions()'s fancier usages defined.
+	- New documentation section on exports [C<use> and C<import()>].
+	- New documentation section on best ways to use symbolic constants.
+	- New documentation section on probable future directions.
+	- Minor documentation fixes.
 
-0.25:  2006-04-03
-       - Add no_index to META.yml to prevent indexing of modules under ExtUtils
-         directory contained in the distribution. 
+0.21  1998-09-17 14:49
+	- Remove a few "harmless" warnings reported by C<-w>.
 
-0.24:  2006-03-22
-       - Allow it to build and install with Vanilla Perl 5.8.8 with mingw 
-         gcc 3.4.5 on Windows XP SP2 without warnings.
+0.20  1998-07-14 14:14
+	- Renamed to Win32::TieRegistry.
+	- Added options:  SplitMultis, FixSzNulls,
+	    DWordToHex, DualBinVals, and DualTypes.
+	- Added hooks for future option, TieValues.
+	- Most methods now return a tied ref. if called via one:
+	    Open(), Load(), Connect(), and CreateKey().
+	- Changed import() to support setting options.
+	- More options on what to "export" and to where.
+	- Each time you C<use>, you get a _separate copy_ of $Registry.
+	- New methods:  Clone(), GetOptions(), and SetOptions().
+	- Flush() no longer calls RegFlushKey() by default.
+	- Optimize deletes to be faster in void contexts.
+	- If delete OK but fetch of old val failed, have C<delete> return $^E.
+	- "Disposition" option to CreateKey() no longer considered invalid.
+	- CreateKey() always used OS_Delimiter to parse subkey paths.
+	- Load()'s second argument can now be new subkey name.
+	- Load() via remote key w/o specific new subkey name no longer tries
+	    to load into _local_ LMachine.
+	- Finished POD.
 
-0.23:  2002-06-11
-       - Allow it to build with Perl 5.8 (is that here already?)
-       - Add DELETE/READ_CONTROL/WRITE_DAC/WRITE_OWNER/SYNCHRONIZE as KEY_*
+0.15  1998-07-14 14:14
+	- "Stub" version of Tie::Registry for backward compatibility only.
 
-0.22:  2000-04-10
-       - Add AUTHOR and ABSTRACT_FROM to Makefile.PL [from libwin32].
-       - Trivial speed improvements [from libwin32].
-       - Other minor fixes [from libwin32].
+0.14  Never released
+	- Added Install.bat for people without a version of "make".
+	- Report key path when STORE fails.
 
-0.21:  2000-04-07
-       - For C<void *vp; UV u>, C<u= U_V(vp)> corrected to C<u= (UV)(vp)>.
-       - Makefile no longer tries to rebuild constant definitions.
-       - Remove warning and fatal error from C<sub constant>.
-       - Added C</*CONSTS_DEFINED*/> to fix "WRITE_PERL=>0,CPLUSPLUS=>1" case.
-       - Added C<regConstant()> with better interface than C<constant()>.
-       - For C<BOOL> output, return C<PL_sv_no> [or a non-zero integer].
-       - For C<BOOL> input, treat C<"yes"> as true instead of as C<0>.
-       - Quietly translate C<[]> to C<0> for all integral arguments.
-       - C<AllowPriv()> and C<*SystemShutdown()> now set C<regLastError()>.
+0.13  1998-03-31 20:50
+	- "Delimiter" now spelled correctly throughout (sigh).
+	- SetValue now translates "REG_*" strings to numeric constants.
+	- Removed dependance on $^E being tied to Win32::GetLastError().
 
-0.20:  2000-03-20
-       - Use ppport.h from Devel::PPPort [C<na> changed to C<PL_na>].
-       - Improved how constants are done based on Perl5Porters suggestions
-         [Added F<ExtUtils/Myconst2perl>, eventually to be part of MakeMaker].
-       - Added SE_* string constants.
-       - Disabled AUTOLOAD and the confusing error messages it generates.
-       - Replaced C<_alloca()> with C<sv_grow(sv_newmortal(),size)>.
-       - Allow support for build environments with no C<VALENTA>/C<VALENTW>.
-       - Use new F<buffers.h> which does typecast so can compile using C++.
-       - Changed MIN_GROW_SIZE from 8 to 128 so buffer sizes less needed.
-       - Update F<README>.
-       - Mention C<regLastError()> anywhere C<$^E> is mentioned.
-       - Repeat true/false return value documentation for each routine.
-       - Handles are now unsigned to match more accurate constant conversions.
-       - Fixed F<test.pl> to use C<regLastError()> instead of C<$^E>.
+0.12  1997-12-29 10:11
+	- misc.
 
-0.19:  2000-01-06 (limited release)
-       - Total and radical revamp of how constants are done.
-
-0.18:  Unreleased
-       - Added regLastError() for when C<$^E> gets overwritten too quickly.
-
-0.17:  1999-07-29
-       - Fix failure detection for the misdocumented AdjustTokenPrivileges()
-         that would cause AllowPriv() to sometimes return TRUE on failure.
-       - Finish new Hungarian notation, including POD documentation.
-       - Add prototypes to auto-loaded constants so Perl can optimize them.
-       - Fixed typo ("and" changed to "or") in example for RegCloseKey().
-
-0.16:  1999-02-17
-       - Update to v1.09 of buffers.h; use new Hungarian notation.
-       - Added B<-w> to F<test.pl>.
-       - Don't warn when an output-only parameter starts out C<undef>.
-       - Die if output-only parameter is read-only (but not C<[]>).
-       - C<RegSetValueEx[AW](...REG_[EXPAND_]SZ,"val",0)> no longer
-         fails trying to modify the read-only C<"val">.
-
-0.15:  1998-09-17
-       - Don't treat unsigned types (eg. DWORD) as signed.
-
-0.14:  1998-09-15
-       - Enable the C API for PERL_OBJECT builds (VC's cpp has a bug that's
-         tickled by buffers.h under PERL_OBJECT, and there are various
-         typecasting issues to resolve in the regular PERL_OBJECT build).
-
-0.13:  1998-07-10
-       - Added "buffers.h" to standardized how buffer arguments are handled.
-       - Declared all return values as C<bool> [not C<LONG>].
-       - Minor adjustments to variable names (and Hungarian notation).
-       - Allow buffer sizes like C<"=99"> to prevent automatic resizing.
-       - Trim or add '\0' to REG*_SZ values but only when buffer size omitted
-         [for RegEnumValue*(), RegQueryValueEx*(), and RegSetValueEx*()].
-       - POD finished.
-
-0.12:  1997-12-29
-       - Add AllowPriv() function so can load and save keys.
-
-0.11:  1997-11-17
-       - Don't set $! (Perl patched so $^E is used)
-       - Move KEY_NOTIFY to correct block of switch statement.
-       - Like sysread():  sv_setpvn(arg,"",0) if !SvOK(arg).
-       - Change buffer size behavior because DWORD is unsigned.
-       - Allow caller to omit all buffer size arguments.
-       - Don't try to overwrite read-only buffer size arguments.
-
-0.10:  1997-10-29
-       - First release (alpha)
-
-0.01:  1997-10-20
-       - original version; created by h2xs 1.18
+0.10  1997-11-21 15:08
+	- original, limited install, named Tie::Registry.
