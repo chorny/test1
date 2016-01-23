@@ -4,12 +4,13 @@ clone_depth: 1
 
 install:
   # running under CI
+  - reg add HKEY_CURRENT_USER\Software\Perl\test\
   - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
   - ppm install dmake
   - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
   - perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
   - 'echo End install at: & time /t'
-
+  
 build_script:
   - perl Makefile.PL
 
