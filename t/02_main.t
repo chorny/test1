@@ -8,7 +8,7 @@ BEGIN {
 
 use Test::More;
 if ( $^O eq 'MSWin32' or $^O eq 'cygwin' ) {
-	plan( tests => 4 );
+	plan( tests => 8 );
 } else {
 	plan( skip_all => 'Not testing on non-Windows' );
 }
@@ -41,3 +41,12 @@ $branch_reg = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App 
 $output = qx{reg query "$branch_reg" 2>&1};
 $error_code = $?;
 ok(!$error_code);
+$output =~ /\biexplore\s*REG_SZ\s*(.*)$/m;
+my $ie_value = $1;
+ok($ie_value);
+$branch_reg =~ s#\\#/#g;
+
+my $val = $reg->{ "$branch_reg//iexplore" };
+  ok( $val, 'Opened App Management\System Programs' );
+  is( REG_SZ, $val->[1], 'Type is REG_SZ' );
+  is( $val->[0], $ie_value, 'Value matches expected' );
