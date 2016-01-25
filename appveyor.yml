@@ -13,5 +13,5 @@ build_script:
   - perl Makefile.PL
 
 test_script:
-  - dmake
+  - dmake test
   - prove -bv xt/*.t
