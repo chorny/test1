@@ -2,6 +2,10 @@ version: 1.0.{build}
 
 clone_depth: 1
 
+platform:
+  - x86
+  - x64
+  
 install:
   - reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Management\System Programs"
   - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
