@@ -8,10 +8,9 @@ platform:
   
 install:
   - reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Management\System Programs"
+  - echo %PROCESSOR_ARCHITECTURE%
   - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
   - ppm install dmake
-  - ppm install App::cpanminus Module::Version
-  - mversion App::cpanminus
   - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
   - perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
   
