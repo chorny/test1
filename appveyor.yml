@@ -9,6 +9,7 @@ platform:
 install:
   - reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Management\System Programs"
   - SET
+  - perl -V
   - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
   - ppm install dmake
   - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
