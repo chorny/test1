@@ -6,8 +6,7 @@ install:
   - cinst StrawberryPerl
   - perl -V
   - path C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
-  - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
-  - perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
+  - cpanm -q --with-develop --with-suggests --installdeps .
   
 build_script:
   - perl Makefile.PL
