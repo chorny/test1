@@ -2,16 +2,10 @@ version: 1.0.{build}
 
 clone_depth: 1
 
-platform:
-  - x86
-  - x64
-  
 install:
-  - reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Management\System Programs"
-  - SET
+  - cinst StrawberryPerl
   - perl -V
-  - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
-  - ppm install dmake
+  - path C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
   - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
   - perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
   
@@ -20,4 +14,3 @@ build_script:
 
 test_script:
   - dmake test
-  - prove -bv xt/*.t
