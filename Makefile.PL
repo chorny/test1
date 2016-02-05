@@ -71,11 +71,12 @@ unshift @check, split /:/, $ENV{INCLUDE};
 
 my $libjpeg_local_windows = '../libjpeg-turbo-1.1.1';
 my $libpng_local_windows = '../lpng143';
+my $giflib_local_windows = '../giflib-4.1.6/lib';
 if ( $^O =~ /Win32/i ) {
     push @check, $Config{incpath};
     push @check, $libjpeg_local_windows;
     push @check, $libpng_local_windows;
-    push @check, '../giflib-4.1.6/lib';
+    push @check, $giflib_local_windows;
 }
 
 # Look for libjpeg
@@ -239,7 +240,7 @@ if ( $^O =~ /Win32/i ) {
         $MYEXTLIB .= '../lpng143/libpng.lib ../zlib/zlib.lib ';
     }
     
-    if ($GIF) {
+    if ($GIF && $gif_inc ne $giflib_local_windows) {
         $MYEXTLIB .= '../giflib-4.1.6/windows/Release/giflib.lib ';
     }
 }
