@@ -9,15 +9,14 @@ configuration:
 install:
 - ps: >-
     If (${env:CONFIGURATION} -eq "ActivePerl") {
-      path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
-      ppm install dmake Test::Pod
-      lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
+      $env:Path = "C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;" + $env:Path
+      RunCommand "ppm install dmake Test::Pod"
+      RunCommand "lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm"
     } else {
-      cinst StrawberryPerl
-      path C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
+      RunCommand "cinst StrawberryPerl"
+      $env:Path = "C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;" + $env:Path
     }
-    perl -V
-
+- perl -V
 - perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
   
 build_script:
