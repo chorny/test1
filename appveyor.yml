@@ -21,7 +21,7 @@ install:
       cinst StrawberryPerl
       $env:Path = "C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;" + $env:Path
       perl -V
-      perl cpanm -q --with-develop --with-suggests --installdeps .
+      cpanm -q --with-develop --with-suggests --installdeps .
     }
   
 build_script:
