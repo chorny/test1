@@ -3,13 +3,16 @@ version: 1.0.{build}
 clone_depth: 1
 
 configuration:
-  - ActivePerl
   - Strawberry
+  - ActivePerl
   
+matrix:
+  fast_finish: true 
+
 install:
 - ps: >-
     If (${env:CONFIGURATION} -eq "ActivePerl") {
-      $env:Path = "C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;" + $env:Path
+      $env:Path = "C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;C:\projects\;" + $env:Path
       ppm install dmake Test::Pod
       lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
     } else {
