@@ -1,289 +1,193 @@
-use strict;
-
-use 5.008;
-
+#!/usr/bin/perl -w
+use 5.001; #not tested
+use ExtUtils::MakeMaker;
 use Config;
-use ExtUtils::MakeMaker qw(WriteMakefile);
-use File::Spec::Functions;
-use Getopt::Long;
-
-my (@INC, @LIBPATH, @LIBS);
-my ($JPEG, $PNG, $GIF, $MYEXTLIB);
-my ($JPEG_VERSION, $PNG_VERSION, $GIF_VERSION);
-
-my ($help, $jpeg_inc, $jpeg_lib, $png_inc, $png_lib, $gif_inc, $gif_lib);
-my ($jpeg_static, $png_static, $gif_static);
-
-my $DEFINES = '-O2';
-$DEFINES .= ' -Wall' unless $^O =~ /sun|solaris/i;
-$DEFINES .= ' -Wno-unused-value -Wno-format-security -Winline -ffast-math' unless $^O =~ /Win32|sun|solaris/i;
-
-if ( $^O !~ /Win32/i ) { 
-    # Check for Sparc ReadyNAS to enable ASM code
-    if ( -e '/etc/raidiator_version' ) {
-        if ( $Config{archname} eq 'sparc-linux' ) {
-            $DEFINES .= ' -DPADRE';
-        }
-    }
-    
-    push @LIBPATH, '-L/usr/local/lib';
+use strict;
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+unless ($^O eq "MSWin32" || $^O eq "cygwin" || $^O eq "interix") { #not tested on Interix
+    die "OS unsupported\n";
 }
 
-my $result = GetOptions(
-    "help|h"               => \$help,
-    "with-jpeg-includes=s" => \$jpeg_inc,
-    "with-jpeg-libs=s"     => \$jpeg_lib,
-    "with-jpeg-static"     => \$jpeg_static,
-    "with-png-includes=s"  => \$png_inc,
-    "with-png-libs=s"      => \$png_lib,
-    "with-png-static"      => \$png_static,
-    "with-gif-includes=s"  => \$gif_inc,
-    "with-gif-libs=s"      => \$gif_lib,
-    "with-gif-static"      => \$gif_static,
-);
+WriteMakefile1(
+    'NAME'	=> 'Win32API::File',
+    'VERSION_FROM' => 'File.pm', # finds $VERSION
+    (  $Config{archname} =~ /-object\b/i  ?  ( 'CAPI' => 'TRUE' )  :  ()  ),
+    'AUTHOR'		=> 'Tye McQueen <tye@metronet.com>',
+    'ABSTRACT_FROM'	=> 'File.pm',
+    'postamble' => { IMPORT_LIST => [qw(/._/ !/[a-z]/ :MEDIA_TYPE)],
+		     IFDEF => "!/[a-z\\d]/",
+		     CPLUSPLUS => 1,
+		     WRITE_PERL => 1,
+		     #PERL_FILE_LIST => ['File.pm'], #added by Chorny
+		     #C_FILE_LIST => ['File.xs'], #added by Chorny
+		     # Comment out next line to rebuild constants defs:
+		     NO_REBUILD => 1,
+		   },
+    (  ! $Config{libperl}  ?  ()  :  ( LIBPERL_A => $Config{libperl} )  ),
+    'INSTALLDIRS' => (($] >= 5.008009 and $] < 5.012) ? 'perl' : 'site'),
+    'LICENSE'	=> 'perl',
+    'MIN_PERL_VERSION' => 5.001,
+    'PREREQ_PM'	=> {
+        'Math::BigInt' => 0,
+        'Win32' => 0,
+        'Carp' => 0,
+        'IO::File' => 0,
+    },
+    TEST_REQUIRES => {
+        'File::Spec' => 0,
+        'Test::More' => 0,
+    },
 
-if ($help || !$result) {
-    print STDERR <<END;
-Usage: perl Makefile.PL [options]
-
-Configure Image::Scale module.
-
-Options:
-    --with-jpeg-includes    Path to directory containing jpeglib.h
-    --with-jpeg-libs        Path to directory containing libjpeg
-    --with-jpeg-static      Statically link libjpeg
-    --with-png-includes     Path to directory containing png.h
-    --with-png-libs         Path to directory containing libpng
-    --with-png-static       Statically link libpng
-    --with-gif-includes     Path to directory containing gif_lib.h
-    --with-gif-libs         Path to directory containing libgif
-    --with-gif-static       Statically link libgif
-
-END
-
-    exit 0;
-}
-
-my @check = qw(/usr/include /usr/local/include /opt/local/include);
-
-# Check in environment-supplied locations before standard ones
-unshift @check, split /:/, $ENV{INCLUDE};
-
-my $libjpeg_local_windows = '../libjpeg-turbo-1.1.1';
-my $libpng_local_windows = '../lpng143';
-my $giflib_local_windows = '../giflib-4.1.6/lib';
-if ( $^O =~ /Win32/i ) {
-    push @check, $Config{incpath};
-    push @check, $libjpeg_local_windows;
-    push @check, $libpng_local_windows;
-    push @check, $giflib_local_windows;
-}
-
-# Look for libjpeg
-for my $incdir ( $jpeg_inc, @check ) {
-    if ( $incdir && -e catfile($incdir, 'jpeglib.h') ) {
-        $JPEG = 1;
-        $jpeg_inc = $incdir;
-        
-        unshift @INC, '-I' . $jpeg_inc;
-        if ($jpeg_lib) {
-            unshift @LIBPATH, '-L' . $jpeg_lib;
-        }
-        
-        if ($jpeg_static) {
-            if ($jpeg_lib) {
-                $MYEXTLIB .= $jpeg_lib . '/' . 'libjpeg$(LIB_EXT) ';
-            }
-            else {
-                $MYEXTLIB .= $jpeg_inc . '/../lib/libjpeg$(LIB_EXT) ';
-            }
-        }
-        else {
-            push @LIBS, '-ljpeg';
-        }
-        
-        if ( $^O =~ /Win32/i && -e catfile($incdir, 'build', 'jconfig.h')) {
-            #Strawberry 5.14.0 has version in jpeglib.h only, jconfig.h is in strawberry\c\include\
-            $JPEG_VERSION = _re_find( catfile($incdir, 'build', 'jconfig.h'), qr/JPEG_LIB_VERSION\s+(\d+)/ ) || 'unknown';
-        }
-        else {
-            $JPEG_VERSION = _re_find( catfile($incdir, 'jpeglib.h'), qr/JPEG_LIB_VERSION\s+(\d+)/ ) || 'unknown';
-            if ( $JPEG_VERSION eq 'unknown' ) {
-                # Also check jconfig.h as it contains the version when using libjpeg-turbo
-                if ( -d catdir($incdir, 'x86_64-linux-gnu') ) { # jconfig.h header is sometimes installed in a subdir
-                    $JPEG_VERSION = _re_find( catfile($incdir, 'x86_64-linux-gnu', 'jconfig.h'), qr/JPEG_LIB_VERSION\s+(\d+)/ ) || 'unknown';
-                }
-                else {
-                    $JPEG_VERSION = _re_find( catfile($incdir, 'jconfig.h'), qr/JPEG_LIB_VERSION\s+(\d+)/ ) || 'unknown';
-                }
-            }
-        }
-        
-        $DEFINES .= " -DHAVE_JPEG -DJPEG_VERSION=$JPEG_VERSION";
-        
-        last;
-    }
-}
-
-# Look for libpng
-for my $incdir ( $png_inc, @check ) {
-    if ( $incdir && -e catfile($incdir, 'png.h') ) {
-        $PNG = 1;
-        $png_inc = $incdir;
-        
-        unshift @INC, '-I' . $png_inc;
-        if ($png_lib) {
-            unshift @LIBPATH, '-L' . $png_lib;
-        }
-        
-        if ($png_static) {
-            if ($png_lib) {
-                $MYEXTLIB .= $png_lib . '/' . 'libpng$(LIB_EXT) ';
-            }
-            else {
-                $MYEXTLIB .= $png_inc . '/../lib/libpng$(LIB_EXT) ';
-            }
-            
-            push @LIBS, '-lz';
-        }
-        else {
-            push @LIBS, '-lpng -lz';
-        }
-        
-        $PNG_VERSION = _re_find( catfile($incdir, 'png.h'), qr/PNG_LIBPNG_VER_STRING\s+"([\d\.]+)"/ ) || 'unknown';
-        
-        $DEFINES .= " -DHAVE_PNG -DPNG_VERSION=$PNG_VERSION";
-        
-        last;
-    }
-}
-
-# Look for giflib
-for my $incdir ( $gif_inc, @check ) {
-    if ( $incdir && -e catfile($incdir, 'gif_lib.h') ) {
-        $gif_inc = $incdir;
-        
-        unshift @INC, '-I' . $gif_inc;
-        if ($gif_lib) {
-            unshift @LIBPATH, '-L' . $gif_lib;
-        }
-        
-        if ($gif_static) {
-            if ($gif_lib) {
-                $MYEXTLIB .= $gif_lib . '/' . "libgif\$(LIB_EXT) ";
-            }
-            else {
-                $MYEXTLIB .= $gif_inc . "/../lib/libgif\$(LIB_EXT) ";
-            }
-        }
-        else {
-            push @LIBS, "-lgif";
-        }
-        
-        my $GIF_MAJOR = _re_find( catfile($incdir, 'gif_lib.h'), qr/GIFLIB_MAJOR (\d+)/ );
-        my $GIF_MINOR = _re_find( catfile($incdir, 'gif_lib.h'), qr/GIFLIB_MINOR (\d+)/ );
-        
-        if ( $GIF_MAJOR ) {
-            $GIF_VERSION = "${GIF_MAJOR}.${GIF_MINOR}";
-            if ( $GIF_VERSION >= 4.2 ) {
-                $GIF = 1;
-                $DEFINES .= " -DHAVE_GIF -DGIF_VERSION=$GIF_VERSION";
-                
-                # giflib >= 5.1 changes DGifClose()
-                if ( $GIF_VERSION >= 5.1 ) {
-                    $DEFINES .= " -DGIFLIB_API_51";
-                }
-                
-                # giflib >= 5.0 change DGifOpen(), GifErrorString(), GifAddExtensionBlock() and struct SavedImage
-                if ( $GIF_VERSION >= 5.0 ) {
-                    $DEFINES .= " -DGIFLIB_API_50";
-                }
-            }
-        }
-        
-        last;
-    }
-}
-
-# Require at least one of jpeg or png
-if ( !$JPEG && !$PNG ) {
-    my $err = "Image::Scale requires at least one of libjpeg or libpng, please install one or both and try again.\n";
-    
-    if ( $^O =~ /Win32/i ) {
-        $err .= "\nPlease read the README.win32 file for build instructions on Windows.\n";
-    }
-    
-    warn $err;
-    
-    exit 0;
-}
-
-unshift @INC, '-I. -I.. -Isrc -Iinclude';
-
-print "\n";
-print "Image::Scale will be built with:\n\n";
-print "  JPEG support:     " . ( $JPEG ? "yes ($jpeg_inc, libjpeg version $JPEG_VERSION)" : "no, install libjpeg (v8 recommended)" ) . "\n";
-print "  PNG support:      " . ( $PNG ? "yes ($png_inc, libpng version $PNG_VERSION)" : "no, install libpng (v1.4.x recommended)" ) . "\n";
-print "  GIF support:      " . ( $GIF ? "yes ($gif_inc, giflib version $GIF_VERSION)" : "no, install giflib 4.2 or higher" ) . "\n";
-print "\n";
-
-if ( $^O =~ /Win32/i ) {
-    *MY::postamble = sub {};
-
-    if ($JPEG && $jpeg_inc eq $libjpeg_local_windows) {
-        push @INC, '-I../libjpeg-turbo-1.1.1/build'; # for jconfig.h
-        $MYEXTLIB .= '../libjpeg-turbo-1.1.1/build/jpeg-static.lib ';
-    }
-    
-    if ($PNG && $png_inc eq $libpng_local_windows) {
-        push @INC, '-I../zlib';
-        $MYEXTLIB .= '../lpng143/libpng.lib ../zlib/zlib.lib ';
-    }
-    
-    if ($GIF && $gif_inc eq $giflib_local_windows) {
-        $MYEXTLIB .= '../giflib-4.1.6/windows/Release/giflib.lib ';
-    }
-}
-
-my $inc_files = join(' ', glob 'include/*.h');
-my $src_files = join(' ', glob 'src/*.c');
-
-WriteMakefile(
-    NAME              => 'Image::Scale',
-    VERSION_FROM      => 'lib/Image/Scale.pm',
-    PREREQ_PM         => { 'Test::NoWarnings' => 0 },
-    ABSTRACT_FROM     => 'lib/Image/Scale.pm',
-    AUTHOR            => 'Andy Grundman <andy@hybridized.org>',
-    INC               => join(' ', @INC),
-    LIBS              => [ join(' ', @LIBPATH, @LIBS) ],
-    DEFINE            => $DEFINES,
-    MYEXTLIB          => $MYEXTLIB,
-    depend            => { 'Scale.c' => "$inc_files $src_files" },
     META_MERGE => {
-        'meta-spec' => { version => 2 },
         resources => {
-            repository => {
-                type => 'git',
-                url  => 'https://github.com/andygrundman/Image-Scale.git',
-                web  => 'https://github.com/andygrundman/Image-Scale',
-            },
+            repository => 'http://github.com/chorny/Win32API-File',
         },
     },
+    $^O =~/win/i ? (
+        dist => {
+            TAR      => 'ptar',
+            TARFLAGS => '-c -C -f',
+        },
+    ) : (),
 );
 
-sub _re_find {
-    my ( $file, $re ) = @_;
-    
-    my $result;
-    
-    open my $fh, '<', $file or die "Unable to read $file\n";
-    while ( my $line = <$fh> ) {
-        if ( $line =~ $re ) {
-            $result = $1;
-            last;
-        }
+# Replacement for MakeMaker's "const2perl section" for versions
+# of MakeMaker prior to the addition of this functionality:
+sub MY::postamble
+{
+    my( $self, %attribs )= @_;
+
+    # Don't do anything if MakeMaker has const2perl
+    # that already took care of all of this:
+    return   unless  %attribs;
+
+    # Don't require these here if we just C<return> above:
+    eval "use lib 'inc'; use ExtUtils::Myconst2perl qw(ParseAttribs); 1"   or  die "$@";
+    eval "use ExtUtils::MakeMaker qw(neatvalue); 1"   or  die "$@";
+
+    # If only one module, can skip one level of indirection:
+    my $hvAttr= \%attribs;
+    if(  $attribs{IMPORT_LIST}  ) {
+	$hvAttr= { $self->{NAME} => \%attribs };
     }
-    close $fh;
-    
-    return $result;
+
+    my( $module, @m, $_final, @clean, @realclean );
+    foreach $module (  keys %$hvAttr  ) {
+	my( $outfile, @perlfiles, @cfiles, $bin, $obj, $final, $noreb );
+
+	# Translate user-friendly options into coder-friendly specifics:
+	ParseAttribs( $module, $hvAttr->{$module}, { OUTFILE => \$outfile,
+	  C_FILE_LIST => \@perlfiles, PERL_FILE_LIST => \@cfiles,
+	  OBJECT => \$obj, BINARY => \$bin, FINAL_PERL => \$final,
+	  NO_REBUILD => \$noreb } );
+	die "IFDEF option in Makefile.PL must be string, not code ref.\n"
+	  if  ref $hvAttr->{$module}->{IFDEF};
+	die qq{IFDEF option in Makefile.PL must not contain quotes (").\n}
+	  if  ref $hvAttr->{$module}->{IFDEF};
+
+	# How to create F<$outfile> via ExtUtils::Myconst2perl::Myconst2perl:
+	push @m, "
+$outfile:	@perlfiles  @cfiles  Makefile" . '
+	$(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" -MExtUtils::Myconst2perl \\
+	  -e "my %attribs;" \\
+	  ';
+	$m[-1] =~ s/^/##/gm   if  $noreb;
+	my( $key, $value );
+	while(  ( $key, $value )= each %{$hvAttr->{$module}}  ) {
+	    push @m, '-e "$$attribs{' . $key . '}= ' # try {{ }} for dmake
+	      . neatvalue($value) . qq[;" \\\n\t  ];
+	    $m[-1] =~ s/^/##/gm   if  $noreb;
+	}
+	push @m, '-e "Myconst2perl(' . neatvalue($module) . ",%attribs)\"\n";
+
+	# If requested extra work to generate Perl instead of XS code:
+	if(  $bin  ) {
+	    my @path= split /::/, $module;
+	    my $_final= $final;
+	    $_final =~ s/\W/_/g;
+
+	    # How to compile F<$outfile> and then run it to produce F<$final>:
+	    push @m, "
+$bin:	$outfile" . '
+	$(CC) $(INC) $(CCFLAGS) $(OPTIMIZE) $(PERLTYPE) $(LARGE) \\
+	  $(SPLIT) $(DEFINE_VERSION) $(XS_DEFINE_VERSION) -I$(PERL_INC) \\
+	  $(DEFINE)' . $outfile . " "
+	  .  $self->catfile(qw[ $(PERL_INC) $(LIBPERL_A) ]) . " -o $bin
+
+$final: $bin
+	" .  $self->catfile(".",$bin) . " >$final\n";
+	    $m[-1] =~ s/^/##/gm   if  $noreb;
+
+	    # Make sure the rarely-used $(INST_ARCHLIB) directory exists:
+	    push @m, $self->dir_target('$(INST_ARCHLIB)');
+
+	    ##warn qq{$path[-1].pm should C<require "},
+	    ##  join("/",@path,$final), qq{">.\n};
+	    # Install F<$final> whenever regular pm_to_blib target is built:
+	    push @m, "
+pm_to_blib: ${_final}_to_blib
+
+${_final}_to_blib: $final
+	" . '@$(PERL) "-I$(INST_ARCHLIB)" "-I$(INST_LIB)" \\
+	"-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" -MExtUtils::Install \\
+        -e "pm_to_blib({ ',neatvalue($final),',',
+	neatvalue($self->catfile('$(INST_ARCHLIB)',@path,$final)), ' },',
+	neatvalue($self->catfile(qw[$(INST_LIB) auto])), ')"
+	@$(TOUCH) ', $_final, "_to_blib
+
+realclean ::
+	$self->{RM_RF} ", $self->catfile('$(INST_ARCHLIB)', $path[0]), "\n";
+
+	    push( @clean, $outfile, $bin, $obj, $_final . "_to_blib" );
+	    push( @realclean, $final )   unless  $noreb;
+	} else {
+
+	    ##my $name= ( split /::/, $module )[-1];
+	    ##warn qq{$name.xs should C<#include "$final"> },
+	    ##  qq{in the C<BOOT:> section\n};
+	    push( @realclean, $outfile )   unless  $noreb;
+	}
+    }
+
+    push @m, "
+clean ::
+	$self->{RM_F} @clean\n"   if  @clean;
+    push @m, "
+realclean ::
+	$self->{RM_F} @realclean\n"   if  @realclean;
+    return join('',@m);
 }
+
+
+sub WriteMakefile1 {  #Compatibility code for old versions of EU::MM. Written by Alexandr Ciornii, version 0.23. Added by eumm-upgrade.
+	my %params=@_;
+	my $eumm_version=$ExtUtils::MakeMaker::VERSION;
+	$eumm_version=eval $eumm_version;
+	die "EXTRA_META is deprecated" if exists $params{EXTRA_META};
+	die "License not specified" if not exists $params{LICENSE};
+	if ($params{AUTHOR} and ref($params{AUTHOR}) eq 'ARRAY' and $eumm_version < 6.5705) {
+		$params{META_ADD}->{author}=$params{AUTHOR};
+		$params{AUTHOR}=join(', ',@{$params{AUTHOR}});
+	}
+	if ($params{TEST_REQUIRES} and $eumm_version < 6.64) {
+		$params{BUILD_REQUIRES}={ %{$params{BUILD_REQUIRES} || {}} , %{$params{TEST_REQUIRES}} };
+		delete $params{TEST_REQUIRES};
+	}
+	if ($params{BUILD_REQUIRES} and $eumm_version < 6.5503) {
+		#EUMM 6.5502 has problems with BUILD_REQUIRES
+		$params{PREREQ_PM}={ %{$params{PREREQ_PM} || {}} , %{$params{BUILD_REQUIRES}} };
+		delete $params{BUILD_REQUIRES};
+	}
+	delete $params{CONFIGURE_REQUIRES} if $eumm_version < 6.52;
+	delete $params{MIN_PERL_VERSION} if $eumm_version < 6.48;
+	delete $params{META_MERGE} if $eumm_version < 6.46;
+	delete $params{META_ADD} if $eumm_version < 6.46;
+	delete $params{LICENSE} if $eumm_version < 6.31;
+	delete $params{AUTHOR} if $] < 5.005;
+	delete $params{ABSTRACT_FROM} if $] < 5.005;
+	delete $params{BINARY_LOCATION} if $] < 5.005;
+
+	WriteMakefile(%params);
+}
+
