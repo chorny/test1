@@ -15,12 +15,14 @@ install:
       $env:Path = "C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;C:\projects\;" + $env:Path
       ppm install dmake Test::Pod
       lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
+      $env:cpanmpath = "C:/projects/"
     } else {
       cinst StrawberryPerl
       $env:Path = "C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;" + $env:Path
+      $env:cpanmpath = ""
     }
 - perl -V
-- perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
+- perl %cpanmpath%cpanm -q --with-develop --with-suggests --installdeps .
   
 build_script:
   - perl Makefile.PL
