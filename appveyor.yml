@@ -12,7 +12,7 @@ environment:
     - configuration: Strawberry
       install:
         - cinst StrawberryPerl
-        - "path C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%"
+        - "path C:\\strawberry\\perl\\bin;C:\\strawberry\\perl\\site\\bin;C:\\strawberry\\c\\bin;%PATH%"
         - perl -V
 
 install:
