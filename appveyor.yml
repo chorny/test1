@@ -4,11 +4,13 @@ clone_depth: 1
 
 environment:
   matrix:
-    - install:
+    - configuration: ActivePerl
+      install:
       - path C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
       - ppm install dmake Test::Pod
       - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
-    - install:
+    - configuration: Strawberry
+      install:
       - cinst StrawberryPerl
       - path C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
       - perl -V
