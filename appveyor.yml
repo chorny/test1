@@ -11,6 +11,11 @@ matrix:
   fast_finish: true 
 
 install:
+- cmd: |
+    if "%CONFIGURATION%" == "cygwin" (
+      curl -fSL --output C:\projects\cpanm https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm
+    )
+
 - ps: >-
     If (${env:CONFIGURATION} -eq "ActivePerl") {
       $env:Path = "C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;" + $env:Path
@@ -20,7 +25,6 @@ install:
       perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
     } ElseIf (${env:CONFIGURATION} -eq "Cygwin") {
       $env:Path = "C:\cygwin\usr\local\bin;C:\cygwin\bin;" + $env:Path
-      curl -fSL --output C:\projects\cpanm https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm
       perl -V
       perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
     } Else {
