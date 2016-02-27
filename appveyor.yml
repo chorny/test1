@@ -7,8 +7,6 @@ clone_depth: 1
 
 install:
   - '%CYG_BASH% -lc "perl -V"'
-  - curl -fSL -o C:/projects/cpanm https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm
-  - '%CYG_BASH% -lc "perl C:/projects/cpanm --with-develop --with-suggests --installdeps ."'
   
 build_script:
   - '%CYG_BASH% -lc "perl Makefile.PL"'
