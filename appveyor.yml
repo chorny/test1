@@ -7,7 +7,7 @@ clone_depth: 1
 
 install:
   - '%CYG_BASH% -lc "perl -V"'
-  - '%CYG_BASH% -lc "lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm"'
+  - curl -fSL -o C:/projects/cpanm https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm
   - '%CYG_BASH% -lc "cpanm -q --with-develop --with-suggests --installdeps ."'
   
 build_script:
