@@ -13,29 +13,27 @@ matrix:
 install:
 - ps: >-
     $env:make = "dmake"
+    $env:cpanm = "perl C:/projects/cpanm"
     If (${env:CONFIGURATION} -eq "ActivePerl") {
       $env:Path = "C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;" + $env:Path
       ppm install dmake Test::Pod
       lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
-      perl -V
-      perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
     } ElseIf (${env:CONFIGURATION} -eq "Cygwin") {
       $env:Path = "C:\cygwin\usr\local\bin;C:\cygwin\bin;" + $env:Path
       Start-FileDownload 'https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm' -FileName 'C:\projects\cpanm'
-      perl -V
-      perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
       $env:make = "make"
     } Else {
       cinst StrawberryPerl
       $env:Path = "C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;" + $env:Path
-      perl -V
-      cpanm -q --with-develop --with-suggests --installdeps .
+      $env:cpanm = "cpanm"
     }
+- perl -V
+- '%cpanm%  -q --with-develop --with-suggests --installdeps .'
   
 build_script:
   - perl Makefile.PL
 
 test_script:
-  - %make% test
+  - '%make% test'
   - prove -bv xt/*.t
-  - cpanm IPC::Run
+  - '%cpanm% IPC::Run'
