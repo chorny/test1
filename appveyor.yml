@@ -7,6 +7,8 @@ clone_depth: 1
 
 install:
   - set "PATH=C:\cygwin\usr\local\bin;C:\cygwin\bin;%PATH%"
+  - curl -fSL -o C:/projects/cpanm https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm
+  - perl C:/projects/cpanm --with-develop --with-suggests --installdeps .
   - perl -V
   
 build_script:
