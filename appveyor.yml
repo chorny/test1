@@ -1,33 +1,20 @@
 version: 1.0.{build}
 
-clone_depth: 1
 
 configuration:
-  - Strawberry
-  - ActivePerl
-  
-matrix:
-  fast_finish: true 
+  - Cygwin:
+    CYG_BASH: C:\cygwin\bin\bash
+
+clone_depth: 1
 
 install:
-- ps: >-
-    If (${env:CONFIGURATION} -eq "ActivePerl") {
-      $env:Path = "C:\MinGW;C:\MinGW\bin;C:\MinGW\msys\1.0;" + $env:Path
-      ppm install dmake Test::Pod
-      lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
-      perl -V
-      perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
-    } else {
-      cinst StrawberryPerl
-      $env:Path = "C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;" + $env:Path
-      perl -V
-      cpanm -q --with-develop --with-suggests --installdeps .
-    }
+  - '%CYG_BASH% -lc "perl -V"'
+  - '%CYG_BASH% -lc "lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm"'
+  - '%CYG_BASH% -lc "cpanm -q --with-develop --with-suggests --installdeps ."'
   
 build_script:
-  - perl Makefile.PL
+  - '%CYG_BASH% -lc "perl Makefile.PL"'
 
 test_script:
-  - dmake test
-  - prove -bv xt/*.t
-  - cpanm IPC::Run
+  - '%CYG_BASH% -lc "make test"'
+  - '%CYG_BASH% -lc "prove -bv xt/*.t"'
