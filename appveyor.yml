@@ -11,7 +11,7 @@ matrix:
   fast_finish: true 
 
 install:
-- ps: >-
+- ps: |-
     $env:make = "dmake"
     $env:cpanm = "perl C:/projects/cpanm"
     If (${env:CONFIGURATION} -eq "ActivePerl") {
