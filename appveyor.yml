@@ -36,4 +36,3 @@ build_script:
 test_script:
   - '%make% test'
   - prove -bv xt/*.t
-  - '%cpanm% IPC::Run'
