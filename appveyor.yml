@@ -20,7 +20,7 @@ install:
       perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
     } ElseIf (${env:CONFIGURATION} -eq "Cygwin") {
       $env:Path = "C:\cygwin\usr\local\bin;C:\cygwin\bin;" + $env:Path
-      curl -fSL -o C:/projects/cpanm https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm
+      curl -fSL --output C:\projects\cpanm https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm
       perl -V
       perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
     } Else {
