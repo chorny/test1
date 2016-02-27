@@ -6,11 +6,12 @@ environment:
 clone_depth: 1
 
 install:
-  - '%CYG_BASH% -lc "perl -V"'
+  - set "PATH=C:\cygwin\usr\local\bin;C:\cygwin\bin;%PATH%"
+  - perl -V
   
 build_script:
-  - '%CYG_BASH% -lc "perl Makefile.PL"'
+  - perl Makefile.PL
 
 test_script:
-  - '%CYG_BASH% -lc "make test"'
-  - '%CYG_BASH% -lc "prove -bv xt/*.t"'
+  - make test
+  - prove -bv xt/*.t
