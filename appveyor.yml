@@ -1,9 +1,7 @@
 version: 1.0.{build}
 
-
-configuration:
-  - Cygwin:
-    CYG_BASH: C:\cygwin\bin\bash
+environment:
+  CYG_BASH: C:\cygwin\bin\bash
 
 clone_depth: 1
 
