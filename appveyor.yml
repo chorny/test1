@@ -3,9 +3,9 @@ version: 1.0.{build}
 clone_depth: 1
 
 configuration:
-  - Cygwin
   - Strawberry
   - ActivePerl
+  - Cygwin
   
 matrix:
   fast_finish: true 
@@ -37,4 +37,4 @@ test_script:
   - '%make% test'
   - prove -bv xt/*.t
   - '%make% install'
-  - cpanm --verbose IPC::Run
+  - '%cpanm% --verbose IPC::Run'
