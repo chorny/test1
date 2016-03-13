@@ -29,6 +29,7 @@ install:
     }
 - perl -V
 - '%cpanm%  -q --with-develop --with-suggests --installdeps .'
+- '%cpanm%  -q Win32::Job'
   
 build_script:
   - perl Makefile.PL
@@ -37,4 +38,4 @@ test_script:
   - '%make% test'
   - prove -bv xt/*.t
   - '%make% install'
-  - '%cpanm% --verbose IPC::Run'
+  - 'perl -MWin32::Job -E"$job = Win32::Job->new;say $job->spawn(q{perl}, q{%cpanm% --verbose IPC::Run});$job->run(120);"'
