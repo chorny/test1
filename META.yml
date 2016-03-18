@@ -1,24 +1,16 @@
 --- #YAML:1.0
-name:               Win32API-File
-version:            0.1101
-abstract:           Low-level access to Win32 system API calls for files/dirs.
+name: Win32-OLE
+abstract: OLE Automation extensions
+version: 0.1712
 author:
-    - Tye McQueen <tye@metronet.com>
-license:            perl
-distribution_type:  module
-configure_requires:
-    ExtUtils::MakeMaker:  0
-requires:
-    File::Spec:    0
-    IO::File:      0
-    Math::BigInt:  0
-    perl:          5.001
-    Win32:         0
-no_index:
-    directory:
-        - t
-        - inc
-generated_by:       ExtUtils::MakeMaker version 6.48
+  - Jan Dubois <jand@activestate.com>
+license: perl
+requires: 
+  perl: 5.006
+resources:
+  license: http://dev.perl.org/licenses/
+  repository: https://github.com/jandubois/win32-ole
 meta-spec:
-    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
-    version:  1.4
+   version: 1.3
+   url: http://module-build.sourceforge.net/META-spec-v1.3.html
+generated_by: Jan Dubois
