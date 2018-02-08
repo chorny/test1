@@ -25,6 +25,7 @@ install:
       cinst StrawberryPerl
       $env:Path = "C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;" + $env:Path
       $env:cpanm = "cpanm"
+      $env:make = &'perl -MConfig -E"say $Config{make}"'
     }
 - perl -V
 - '%cpanm%  -q --with-develop --with-suggests --installdeps .'
